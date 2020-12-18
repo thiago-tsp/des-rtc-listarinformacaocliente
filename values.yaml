@@ -1,0 +1,191 @@
+rtc-listarinformacaocliente:
+  projetoPiloto: false
+  service:
+    enable: true
+    type: "ClusterIP"
+    ports:
+      - name: "http"
+        port: 80
+        targetPort: 8080
+    name: "service-listarinformacaocliente"
+  hpa:
+    enable: false
+    minReplicas: 1
+    maxReplicas: 5
+    memory: {}
+    cpu: {}
+  deployment:
+    enable: true
+    imagePullSecrets: "atfregistry"
+    replicaCount: 1
+    extraLabels: {}
+    containers:
+      tag: "1.0.1"
+      imagePullPolicy: "IfNotPresent"
+      environments:
+        - name: "QUARKUS_DATASOURCE_JDBC_URL"
+          valueFrom:
+            secretKeyRef:
+              name: "db2"
+              key: "DB_CONNECTION_URL"
+        - name: "QUARKUS_DATASOURCE_USERNAME"
+          valueFrom:
+            secretKeyRef:
+              name: "db2"
+              key: "DB_USER"
+        - name: "QUARKUS_DATASOURCE_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              name: "db2"
+              key: "DB_PASSWORD"
+      envFrom: []
+      ports: []
+      resources:
+        requests:
+          cpu: "300m"
+          memory: "500Mi"
+        limits:
+          cpu: "600m"
+          memory: "1000Mi"
+      livenessProbe: {}
+      readinessProbe: {}
+      volumeMounts: []
+    volumes: []
+    strategy:
+      type: "RollingUpdate"
+    nodeSelector: {}
+    tolerations: []
+    hostAliases: []
+    initContainer:
+      enable: false
+      image: "bb/psc/busybox"
+      tag: "1.31.1"
+      imagePullPolicy: "IfNotPresent"
+      environments: []
+      envFrom: []
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "200Mi"
+        limits:
+          cpu: "300m"
+          memory: "200Mi"
+      volumeMounts: []
+  deploymentCanario:
+    enable: false
+    imagePullSecrets: "atfregistry"
+    replicaCount: 1
+    extraLabels: {}
+    containers:
+      tag: "0.0.2"
+      imagePullPolicy: "IfNotPresent"
+      environments: []
+      envFrom: []
+      ports: []
+      livenessProbe: {}
+      readinessProbe: {}
+      resources:
+        requests:
+          cpu: "300m"
+          memory: "500Mi"
+        limits:
+          cpu: "600m"
+          memory: "1000Mi"
+      volumeMounts: []
+    volumes: []
+    nodeSelector: {}
+    tolerations: []
+    strategy: {}
+    hostAliases: []
+    initContainer:
+      enable: false
+      image: "bb/psc/busybox"
+      tag: "1.31.1"
+      imagePullPolicy: "IfNotPresent"
+      environments: []
+      envFrom: []
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "200Mi"
+        limits:
+          cpu: "300m"
+          memory: "200Mi"
+      volumeMounts: []
+  ingress:
+    enable: true
+    hostname: "listarinformacaocliente.rtc.desenv.bb.com.br"
+    servicePort: 80
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+      nginx.ingress.kubernetes.io/enable-cors: "true"
+      nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+      nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS"
+      nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,ticket-cnl"
+    paths:
+      - path: "/v1"
+        backend:
+          serviceName: "service-listarinformacaocliente"
+          servicePort: 80
+    tls:
+      - secretName: "rtc-certificado-key"
+        hosts:
+          - "listarinformacaocliente.rtc.desenv.bb.com.br"
+  ingressExterno:
+    enable: false
+    hostname: "xyz.sigla.desenv.bb.com.br"
+    servicePort: 80
+    annotations:
+      kubernetes.io/ingress.class: "nginx-externo"
+    paths: []
+    tls: []
+  serviceMonitor:
+    enable: false
+    monitorNamespace: null
+    labels: {}
+    endpoints: []
+  curio:
+    enable: false
+    tag: "0.3.2"
+    environments: []
+    resources:
+      requests:
+        cpu: "350m"
+        memory: "500Mi"
+      limits:
+        cpu: "700m"
+        memory: "1000Mi"
+    livenessProbe:
+      initialDelaySeconds: 60
+      httpGet:
+        path: "/health"
+        port: 8081
+      periodSeconds: 20
+      timeoutSeconds: 5
+      failureThreshold: 6
+      successThreshold: 1
+    readinessProbe:
+      initialDelaySeconds: 120
+      httpGet:
+        path: "/health"
+        port: 8081
+      periodSeconds: 20
+      timeoutSeconds: 5
+      failureThreshold: 6
+      successThreshold: 1
+  persistenceVolume:
+    enable: false
+    persistentVolumeClaim: "pvc-name"
+    storageClass: "nas-client"
+    storageSize: "1Gi"
+  configMaps: null
+  conectividade: []
+  processamentoAVX: false
+  processamentoGPU: false
+  acessoProxy: false
+dnsservice:
+  urls:
+    - "listarinformacaocliente.rtc.desenv.bb.com.br"

@@ -1,0 +1,9 @@
+dependencies:
+  - name: "dnsservice"
+    version: "0.1.0"
+    repository: "https://chartmuseum.devops.nuvem.bb.com.br/bb/infra"
+    alias: ""
+  - name: "bb-aplic"
+    version: "5.3.4"
+    alias: "rtc-listarinformacaocliente"
+    repository: "https://chartmuseum.devops.nuvem.bb.com.br/bb/catalogo"
